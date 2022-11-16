@@ -1,16 +1,10 @@
 const messagesContainer = document.querySelector(".messages")
 const fetchMessagesButton = document.querySelector("#fetchMessages")
 const messageField = document.querySelector("#messageField")
-const sendButton = document.querySelector("#sendMessage")
 const regUsername = document.querySelector("#regUsername")
 const regPassword = document.querySelector("#regPassword")
 const regButton = document.querySelector("#register")
 
-sendButton.addEventListener("click", ()=>{
-    sendMessage(messageField.value)
-    fetchAllMessages()
-    messageField.value = ""
-})
 
 regButton.addEventListener("click", ()=>{
     register(regUsername.value, regPassword.value)

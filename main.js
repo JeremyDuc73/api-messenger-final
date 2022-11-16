@@ -1,13 +1,21 @@
+
 const baseURL = "https://139.162.156.85:8000/"
+
+const userId = 2;
 
 
 const mainContainer = document.querySelector("#main")
 const messagesPageButton = document.querySelector("#messagesPage")
-const autrechoseButton = document.querySelector("#autrechose")
+const registerPageButton = document.querySelector("#registerPage")
+const loginPageButton = document.querySelector("#loginPage")
 
 
+
+registerPageButton.addEventListener("click", displayRegisterPage)
+loginPageButton.addEventListener("click", displayLoginPage)
 messagesPageButton.addEventListener("click", displayMessagesPage)
-autrechoseButton.addEventListener("click", displayAutreChose)
+
+
 
 
 function clearMainContainer(){
@@ -49,8 +57,39 @@ function getMessagesTemplate(messages){
 
 }
 
+function getMessageFieldTemplate(){
+    let template = `
+         <div class="row messageForm">
+
+                <input type="text" name="" id="messageField" placeholder="input message">
+                <button class="btn btn-success" id="sendMessage">Send</button>
+
+        </div>`
+
+    return template
+}
+
 function getRegisterTemplate(){
-    let template = ``
+    let template = `
+                <div class="register container">
+                        <input type="text" id="regUsername" placeholder="username">
+                        <input type="password" id="regPassword" placeholder="password">
+                        <button class="btn btn-primary" id="register">register</button>
+            
+                 </div>
+    `
+    return template
+}
+
+function getLoginTemplate(){
+    let template = `    <div class="container">
+                            <h2>Log In</h2>
+                            <input type="text" name="" id="usernameLogin" placeholder="username">
+                            <input type="password" name="" id="passwordLogin" placeholder="password">
+                            <button class="btn btn-primary" id="login">log in</button>
+                    
+                        </div>`
+
     return template
 }
 
@@ -67,23 +106,90 @@ async function getMessagesFromApi(){
         })
 }
 
-function displayMessagesPage(){
+async function displayMessagesPage(){
+    //consiste a afficher les messages + le champ d'entrée d'un nouveau message
+
+    let messagesAndMessageField = ""
 
     getMessagesFromApi().then(messages=>{
 
-        display(
-            getMessagesTemplate(messages)
-            )
+
+        messagesAndMessageField+=getMessagesTemplate(messages)
+        messagesAndMessageField+=getMessageFieldTemplate()
+
+        display(messagesAndMessageField)
+
+        const messageField = document.querySelector("#messageField")
+
+        const sendButton = document.querySelector("#sendMessage")
+        sendButton.addEventListener("click", sendMessage)
 
 
     })
 
 }
 
-function displayAutreChose(){
-    display("voila autrechose")
+function displayLoginPage(){
+    display(getLoginTemplate())
+    //buttons conts & event listeners
 }
 
 function displayRegisterPage(){
-    display(getRegisterTemplate)
+
+    display(getRegisterTemplate())
+
+    const regUsername = document.querySelector("#regUsername")
+    const regPassword = document.querySelector("#regPassword")
+    const regButton = document.querySelector("#register")
+    regButton.addEventListener("click", ()=>{
+        register(regUsername.value, regPassword.value)
+    })
+
+}
+
+function sendMessage(){
+    let url = `${baseURL}messages/${userId}/new`
+    let body = {
+        content : messageField.value
+    }
+
+
+    let bodySerialise = JSON.stringify(body)
+
+    let fetchParams = {
+        method : "POST",
+        body: bodySerialise
+
+    }
+
+
+    fetch(url, fetchParams)
+
+    displayMessagesPage()
+}
+
+function register(){
+    let url = `${baseURL}register`
+    let body = {
+        username : regUsername.value,
+        password : regPassword.value
+    }
+
+
+    let bodySerialise = JSON.stringify(body)
+
+    let fetchParams = {
+        method : "POST",
+        body: bodySerialise
+
+    }
+
+
+        fetch(url, fetchParams)
+            .then(response=>response.json())
+            .then(data=>console.log(data))
+
+            console.log("y'a un truc qui a foiré déso")
+
+
 }
