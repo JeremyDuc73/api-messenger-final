@@ -1,13 +1,15 @@
 
-const baseURL = "https://139.162.156.85:8000/"
+const baseURL = "https://localhost:8000/"
 
-const userId = 2;
+
 
 
 const mainContainer = document.querySelector("#main")
 const messagesPageButton = document.querySelector("#messagesPage")
 const registerPageButton = document.querySelector("#registerPage")
 const loginPageButton = document.querySelector("#loginPage")
+
+let token = null
 
 
 
@@ -86,7 +88,7 @@ function getLoginTemplate(){
                             <h2>Log In</h2>
                             <input type="text" name="" id="usernameLogin" placeholder="username">
                             <input type="password" name="" id="passwordLogin" placeholder="password">
-                            <button class="btn btn-primary" id="login">log in</button>
+                            <button class="btn btn-primary" id="loginButton">log in</button>
                     
                         </div>`
 
@@ -95,9 +97,17 @@ function getLoginTemplate(){
 
 async function getMessagesFromApi(){
 
-    let url = `${baseURL}messages/`
+    let url = `${baseURL}api/messages/`
 
-  return await fetch(url)
+    let fetchParams = {
+        method : 'GET',
+        headers : {
+            "Content-Type": "application/json",
+            "Authorization" : `Bearer ${token}`
+        }
+    }
+
+  return await fetch(url, fetchParams)
         .then(response=>response.json())
         .then(messages=>{
 
@@ -109,29 +119,40 @@ async function getMessagesFromApi(){
 async function displayMessagesPage(){
     //consiste a afficher les messages + le champ d'entrée d'un nouveau message
 
-    let messagesAndMessageField = ""
-
-    getMessagesFromApi().then(messages=>{
-
-
-        messagesAndMessageField+=getMessagesTemplate(messages)
-        messagesAndMessageField+=getMessageFieldTemplate()
-
-        display(messagesAndMessageField)
-
-        const messageField = document.querySelector("#messageField")
-
-        const sendButton = document.querySelector("#sendMessage")
-        sendButton.addEventListener("click", sendMessage)
+    if(!token){
+        displayLoginPage()
+        alert("log in to see messages")
+    }else{
 
 
-    })
 
+        let messagesAndMessageField = ""
+
+        getMessagesFromApi().then(messages=>{
+
+
+            messagesAndMessageField+=getMessagesTemplate(messages)
+            messagesAndMessageField+=getMessageFieldTemplate()
+
+            display(messagesAndMessageField)
+
+            const messageField = document.querySelector("#messageField")
+
+            const sendButton = document.querySelector("#sendMessage")
+            sendButton.addEventListener("click", sendMessage)
+
+
+        })
+    }
 }
 
 function displayLoginPage(){
     display(getLoginTemplate())
     //buttons conts & event listeners
+    const usernameLogin = document.querySelector('#usernameLogin')
+    const passwordLogin = document.querySelector('#passwordLogin')
+    const loginButton = document.querySelector('#loginButton')
+    loginButton.addEventListener("click", login)
 }
 
 function displayRegisterPage(){
@@ -148,7 +169,7 @@ function displayRegisterPage(){
 }
 
 function sendMessage(){
-    let url = `${baseURL}messages/${userId}/new`
+    let url = `${baseURL}api/messages/new`
     let body = {
         content : messageField.value
     }
@@ -158,6 +179,9 @@ function sendMessage(){
 
     let fetchParams = {
         method : "POST",
+        headers:{"Content-Type":"application/json",
+            "Authorization": `Bearer ${token}`
+        },
         body: bodySerialise
 
     }
@@ -189,7 +213,44 @@ function register(){
             .then(response=>response.json())
             .then(data=>console.log(data))
 
-            console.log("y'a un truc qui a foiré déso")
+
 
 
 }
+
+function login(){
+    let url = `${baseURL}login`
+    let body = {
+        username : usernameLogin.value,
+        password : passwordLogin.value
+    }
+
+
+    let bodySerialise = JSON.stringify(body)
+
+    let fetchParams = {
+        headers:{"Content-Type":"application/json"},
+        method : "POST",
+        body: bodySerialise
+
+    }
+
+
+    fetch(url, fetchParams)
+        .then(response=>response.json())
+        .then(data=> {
+
+            if(data.token){
+                token = data.token
+                displayMessagesPage()
+            }else{
+                displayLoginPage()
+                alert("log in first to see messages")
+            }
+
+        })
+
+
+
+}
+
