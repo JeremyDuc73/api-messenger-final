@@ -5,8 +5,8 @@ const mainContainer = document.querySelector("#main")
 const messagesPageButton = document.querySelector("#messagesPage")
 const registerPageButton = document.querySelector("#registerPage")
 const loginPageButton = document.querySelector("#loginPage")
+const modalResponses = document.querySelector("#modalResponses")
 let token = null
-
 
 
 registerPageButton.addEventListener("click", displayRegisterPage)
@@ -15,6 +15,9 @@ messagesPageButton.addEventListener("click", displayMessagesPage)
 
 
 
+function clearModalResponses(){
+    modalResponses.innerHTML =""
+}
 
 function clearMainContainer(){
     mainContainer.innerHTML= ""
@@ -29,18 +32,18 @@ function display(content){
 }
 
 function getMessageTemplate(message){
-
     let template = `
-                            <div class="border border-dark">
-                                <p>Author : ${message.author.username}</p>
-                                <div class="messageContent">
-                                    <p><strong>${message.content}</strong></p>
-                                </div>
-                            </div>
-                        `
-
+        <div class="border border-dark">
+            <p>Author : ${message.author.username}</p>
+            <div class="messageContent">
+                <p><strong>${message.content}</strong></p>
+            </div>
+            <div>
+                <button id="showModalResponses" class="btn btn-success">Responses</button>
+            </div>
+        </div>
+        `
     return template
-
 }
 
 function getMessagesTemplate(messages){
@@ -67,6 +70,23 @@ function getMessageFieldTemplate(){
     return template
 }
 
+function getResponseTemplate(message){
+    let template =`
+    <div>
+        <p>${message.responses.content}</p>
+    </div>
+    `
+    return template
+}
+
+function getResponsesTemplate(messages){
+    let responsesTemplate = ""
+    messages.forEach(message=>{
+        responsesTemplate += getResponseTemplate(message)
+    })
+    return responsesTemplate
+}
+
 function getRegisterTemplate(){
     let template = `
                 <div class="register container">
@@ -87,19 +107,18 @@ function getLoginTemplate(){
                 <input type="text" id="usernameLogin">
                 <span class="highlight"></span>
                 <span class="bar"></span>
-                <label>Name</label>
+                <label>Username</label>
             </div>
             <div class="group">
                 <input type="password" id="passwordLogin">
                 <span class="highlight"></span>
                 <span class="bar"></span>
-                <label>Email</label>
+                <label>Password</label>
             </div>
             <button class="btn btn-primary" id="loginButton">log in</button>
         </div>
-        
     </div>
-`
+    `
     return template
 }
 
@@ -118,7 +137,6 @@ async function getMessagesFromApi(){
   return await fetch(url, fetchParams)
         .then(response=>response.json())
         .then(messages=>{
-
            return messages
 
         })
@@ -141,8 +159,24 @@ async function displayMessagesPage(){
             const messageField = document.querySelector("#messageField")
             const sendButton = document.querySelector("#sendMessage")
             sendButton.addEventListener("click", sendMessage)
+            const buttonsModalResponses = document.querySelectorAll("#showModalResponses")
+            buttonsModalResponses.forEach(buttonModalResponses =>{
+                buttonModalResponses.addEventListener("click", ()=>{
+                    displayResponses()
+                })
+            })
         })
     }
+}
+
+async function displayResponses(){
+    clearModalResponses()
+
+    let responsesPage
+    getMessagesFromApi().then(messages=>{
+        responsesPage += getResponsesTemplate(messages)
+        modalResponses.innerHTML += responsesPage
+    })
 }
 
 function modalEmptyUsernameOrPassword(){
@@ -153,7 +187,6 @@ function modalEmptyUsernameOrPassword(){
 
 function displayLoginPage(){
     display(getLoginTemplate())
-    //buttons conts & event listeners
     const usernameLogin = document.querySelector('#usernameLogin')
     const passwordLogin = document.querySelector('#passwordLogin')
     const loginButton = document.querySelector('#loginButton')
