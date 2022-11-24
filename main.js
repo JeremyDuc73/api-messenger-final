@@ -1,14 +1,10 @@
-
-const baseURL = "https://172.104.149.64/"
-
-
+const baseURL = "https://b1messenger.tk/"
 
 
 const mainContainer = document.querySelector("#main")
 const messagesPageButton = document.querySelector("#messagesPage")
 const registerPageButton = document.querySelector("#registerPage")
 const loginPageButton = document.querySelector("#loginPage")
-const registerAndLoginButtons = document.querySelector("#registerAndLoginButtons")
 let token = null
 
 
